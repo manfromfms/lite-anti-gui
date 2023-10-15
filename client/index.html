@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Antichess puzzles</title>
+    <link rel="stylesheet"
+          href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+          integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
+          crossorigin="anonymous">
+
+    <link rel="shortcut icon" href="favicon_dark_theme.ico"
+          media="(prefers-color-scheme: dark)"/>
+    <link rel="shortcut icon" href="favicon_light_theme.ico"
+          media="(prefers-color-scheme: light)" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&family=Open+Sans:wght@300;400&family=Roboto+Mono&display=swap" rel="stylesheet">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-25T6VHFDNJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-25T6VHFDNJ');
+    </script>
+
+    <style>
+        body {
+            height: 100vh;
+            max-width: 100vw;
+
+            background-color: #8AE1FC;
+
+            font-family: 'Nunito Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        body {
+            --logo: url("https://imgur.com/wJUHPmY") no-repeat;
+
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+        }
+
+        body[data-theme="dark"] {
+            --logo: url("https://imgur.com/LyCwzjv") no-repeat;
+        }
+
+        .chess-array {
+            display: grid;
+            width: 100%;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        }
+
+        .chess-puzzle-data {
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .chess-container {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .puzzle-info {
+            margin-top: 0px;
+            margin-bottom: 0px;
+
+            color: #3B1C32;
+        }
+
+        .rate-puzzle {
+            margin-top: 30px;
+        }
+
+        .rate-option {
+            border: 2px solid black;
+            margin: -6px;
+            padding: 10px;
+            transition: all 0.2s;
+        }
+
+        .rate-option:hover {
+            background-color: black;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .rate-option-start {
+            border-right: none;
+        }
+
+        .rate-option-middle {
+            border-right: none;
+            border-left: none;
+        }
+
+        .rate-option-end {
+            border-left: none;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        .generate-new {
+            margin: 40px;
+            font-size: xxx-large;
+            background: transparent;
+            border: 2px solid black;
+            transition: all 0.2s;
+        }
+
+        .generate-new:hover {
+            background-color: black;
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 0px 0px 40px black;
+        }
+
+        .get-new {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+        }
+
+        .left-button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .middle-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .right-button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .generate-best-unrated {
+            font-size: large;
+            margin: -10px;
+        }
+
+        .start-flow {
+            font-size: large;
+            margin: -10px;
+        }
+
+        .star {
+            width: 25px;
+        }
+
+        .footer {
+            display: flex;
+            height: 100%;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .bottom-line {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            padding-left: 8px;
+        }
+
+        .online-counter {
+            margin-right: 20px;
+            font-size: small;
+        }
+
+        .choose-category {
+            transition: all 0.2s;
+            border: 2px solid black;
+            background: transparent;
+            font-size: large;
+            text-align: center;
+            padding: 8px;
+            margin-top: -10px;
+            margin-bottom: -10px;
+        }
+
+        .choose-category:hover {
+            transition: all 0.2s;
+            background-color: black;
+            color: white;
+        }
+
+        .id-search {
+            display: flex;
+            justify-content: center;
+        }
+
+        .cat-search {
+            margin: 40px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .cat-select {
+            transition: all 0.2s;
+            text-align: center;
+            padding: 7px;
+            font-size: large;
+            background: transparent;
+            border: 2px solid black;
+            box-shadow: none;
+        }
+
+        .cat-select:hover {
+            transition: all 0.2s;
+            background-color: black;
+            color: white;
+            box-shadow: black 0 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content">
+    <div class="chess-array" id="chess-array">
+
+    </div>
+
+    <div class="get-new">
+        <div class="left-button">
+            <button class="generate-new generate-best-unrated" onclick="getBestUnrated()" title="Get 5 best puzzles that you haven't already rated">Get best unrated!</button>
+        </div>
+        <div class="middle-button">
+            <button class="generate-new" onclick="getNew()" title="Get 5 new puzzles">Get another!</button>
+        </div>
+        <div class="right-button">
+            <a href="/flow/"><button class="start-flow generate-new" title="Start flow">Start flow!</button></a>
+        </div>
+    </div>
+
+    <div class="search">
+        <div class="id-search" title="Search puzzle by it's id">
+            <span>Id:</span>
+            <input type="number" name="by-id" id="by-id">
+        </div>
+        <div class="cat-search" title="Search puzzles by category">
+            <select id="cat-select" class="cat-select" onchange="loadPuzzlesByCat(this.value)">
+                <option value="0" selected>Choose category</option>
+                <option value="1" title="Puzzle started from opening phase">Opening</option>
+                <option value="2" title="Puzzle started from middle phase">Middlegame</option>
+                <option value="3" title="Puzzle started from end phase">Endgame</option>
+                <option value="4" title="Perform a cleaning">Cleaning</option>
+                <option value="5" title="Pawn promotion cleaning">Promotion cleaning</option>
+                <option value="6" title="Win by getting a tempo advantage">Win by tempo</option>
+                <option value="7" title="Queen race">Queen race</option>
+                <option value="8" title="Intermediate move">Intermediate</option>
+
+            </select>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="bottom-line">
+            <a href="/info" title="How to use this website?">
+                <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M10%200C4.477%200%200%204.477%200%2010s4.477%2010%2010%2010s10-4.477%2010-10S15.523%200%2010%200zM9%205h2v2H9zm0%204h2v6H9z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E" alt="Info">
+            </a>
+            <p id="online-counter" class="online-counter" title="How many people are online">
+                Online:
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
+        integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+        crossorigin="anonymous"></script>
+
+<script>
+    var socket = io();
+</script>
+<script src="/script.js"></script>
+
+</body>
+</html>
