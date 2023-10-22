@@ -1,6 +1,6 @@
 var main = async () => {
     const Database = require("@replit/database")
-    const db = new Database()
+    const db = new Database(db_url)
 
     // Save/load encryption
     var CryptoJS = require("crypto-js")
@@ -50,8 +50,6 @@ var main = async () => {
     //console.log(users_db)
     const users = JSON.parse(users_db)
     console.log(`Loaded ${Object.keys(users).length} users`)
-
-    if(users_key === '123456') console.log(JSON.stringify(users))
 
 
     // Init scripts
