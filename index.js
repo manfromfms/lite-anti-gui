@@ -1,9 +1,6 @@
+const fs = require('fs')
+
 var main = async () => {
-    const db_url = ''
-
-    const Database = require("@replit/database")
-    const db = new Database(db_url)
-
     var users_db = await db.get("users")
 
     //console.log(users_db)
@@ -23,6 +20,8 @@ var main = async () => {
     const server = http.createServer(app)
     const { Server } = require("socket.io")
     const io = new Server(server)
+
+    app.use(express.json())
 
     // Main page
     app.get('/', (req, res) => {
@@ -76,6 +75,12 @@ var main = async () => {
     // Info page
     app.get('/info', (req, res) => {
         res.sendFile(__dirname + '/client/info/index.html')
+    })
+
+    // API
+    app.post('/get-db-key', (req, res) => {
+        if(res.body.token === process.env['db_key']) res.json(process.env['REPLIT_DB_URL'])
+        else res.json({"error": "Access denied"})
     })
 
     var onlineCounter = 0
@@ -324,4 +329,28 @@ var main = async () => {
     })
 }
 
-main()
+// Connect to database
+const Database = require("@replit/database")
+var db
+
+if(fs.readdirSync(__dirname + '/').includes('private.json')) {
+    console.log('Loading database from cloud')
+    
+    const axios = require('axios');
+
+    const data = require('./private.json')
+
+    axios.post('https://long-double.com/get-db-key', data)
+        .then(res => {
+            console.log('Database loaded successfully')
+            db = new Database(res.data)
+            main()
+        })
+        .catch(err => {
+            console.error(err)
+        })
+} else {
+    console.log('Loading local database')
+    db = new Database()
+    main()
+}
