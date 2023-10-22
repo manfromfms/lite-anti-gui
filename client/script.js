@@ -89,6 +89,9 @@ var applyRating = (elem) => {
             <option value="6" title="Win by getting a tempo advantage">Win by tempo</option>
             <option value="7" title="Queen race">Queen race</option>
             <option value="8" title="Intermediate move">Intermediate</option>
+            <option value="9" title="Zugzwang position">Zugzwang</option>
+            <option value="10" title="2-4 moves">Short</option>
+            <option value="11" title="5-10 moves">Long</option>
         </select>
     `
 
@@ -105,6 +108,12 @@ socket.on("puzzle-data", (data) => {
     console.log(data)
     if(Object.keys(data).length === 0) return
 
+    if(window.innerWidth < window.innerHeight) {
+        chessArray.style = 'grid-template-columns: 1fr; padding-bottom: 80px'
+
+        if(chessArray.children.length >= 1) return
+    }
+
     const config = {
         draggable: false,
         position: data.fen,
@@ -120,7 +129,7 @@ socket.on("puzzle-data", (data) => {
 
     if(data.rate === 0) starString = ''
 
-    catStr = `Opening: ${Math.floor(data.categories["1"] * 100)}%\nMiddlegame: ${Math.floor(data.categories["2"] * 100)}%\nEndgame: ${Math.floor(data.categories["3"] * 100)}%\nCleaning: ${Math.floor(data.categories["4"] * 100)}%\nPromotion cleaning: ${Math.floor(data.categories["5"] * 100)}%\nWin by tempo: ${Math.floor(data.categories["6"] * 100)}%\nQueen race ended: ${Math.floor(data.categories["7"] * 100)}%\nQueen race stopped: ${Math.floor(data.categories["8"] * 100)}%\nIntermediate: ${Math.floor(data.categories["9"] * 100)}%\n`
+    catStr = `Opening: ${Math.floor(data.categories["1"] * 100)}%\nMiddlegame: ${Math.floor(data.categories["2"] * 100)}%\nEndgame: ${Math.floor(data.categories["3"] * 100)}%\nCleaning: ${Math.floor(data.categories["4"] * 100)}%\nPromotion cleaning: ${Math.floor(data.categories["5"] * 100)}%\nWin by tempo: ${Math.floor(data.categories["6"] * 100)}%\nQueen race:${Math.floor(data.categories["7"] * 100)}%\nIntermediate: ${Math.floor(data.categories["8"] * 100)}%\nZugzwang: ${Math.floor(data.categories["9"] * 100)}%\nShort: ${Math.floor(data.categories["10"] * 100)}%\nLong: ${Math.floor(data.categories["11"] * 100)}%`
 
     /*
         <p class="puzzle-info puzzle-elo" title="Users ratings">Rating: ${Math.round(data.rate*100)/100}</p>

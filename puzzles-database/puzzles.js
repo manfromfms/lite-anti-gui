@@ -107,6 +107,16 @@ class PuzzlesAPI {
             "7": 0,
             "8": 0,
             "9": 0,
+            "10": 0,
+            "11": 0,
+        }
+
+        var puzzle = this.recurrentSearchById(id, 0, this.puzzles.length - 1)
+
+        if(puzzle.tags) {
+            for(let i in puzzle.tags) {
+                counters[puzzle.tags[i] + ''] = 1
+            }
         }
 
         for(let i in this.users) {
@@ -135,7 +145,7 @@ class PuzzlesAPI {
             if(!this.ifRated(user, this.puzzles[i]) && ((range && this.puzzles[i].id >= range.start && this.puzzles[i].id <= range.end) || !range)) allowedPuzzles.push(this.puzzles[i])
         }
 
-        if(allowedPuzzles.length === 0) return []
+        if(allowedPuzzles.length === 0) return {}
 
         var result = []
         while(amount-- && allowedPuzzles.length > 0) {
@@ -184,11 +194,18 @@ class PuzzlesAPI {
 
     getCategorizedUnrated(user, type) {
         var categorizedPuzzles = {}
+        for(let i in this.puzzles) {
+            if(this.puzzles[i].tags) categorizedPuzzles[this.puzzles[i].id] = {
+                ...this.puzzles[i],
+                rate: this.getPuzzleRating(this.puzzles[i].id),
+                categories: this.getPuzzleCategory(this.puzzles[i].id),
+            }
+        }
 
         for(let i in this.users) {
             for(let j in this.users[i].categorized) {
-                if(!categorizedPuzzles[this.users[i].categorized[j].id] && this.puzzles[this.users[i].categorized[j].id]) categorizedPuzzles[this.users[i].categorized[j].id] = {
-                    ...this.puzzles[this.users[i].categorized[j].id],
+                if(!categorizedPuzzles[this.users[i].categorized[j].id] && this.recurrentSearchById(this.users[i].categorized[j].id, 0, this.puzzles.length - 1).id >= 0) categorizedPuzzles[this.users[i].categorized[j].id] = {
+                    ...this.recurrentSearchById(this.users[i].categorized[j].id, 0, this.puzzles.length - 1),
                     rate: this.getPuzzleRating(this.users[i].categorized[j].id),
                     categories: this.getPuzzleCategory(this.users[i].categorized[j].id),
                 }
@@ -197,12 +214,12 @@ class PuzzlesAPI {
 
         var array = []
         for(let i in categorizedPuzzles) {
-            if(!this.ifCategorized(user, categorizedPuzzles[i]) && categorizedPuzzles[i].categories[type + ''] > 0) {
+            if(!this.ifCategorized(user, categorizedPuzzles[i]) && !this.ifRated(user, categorizedPuzzles[i]) && categorizedPuzzles[i].categories[type + ''] > 0) {
                 array.push(categorizedPuzzles[i])
             }
         }
 
-        array = array.sort((a, b) => {return b.categories[type + ''] - a.categories[type + '']})
+        array = array.sort((a, b) => {return (b.categories[type + '']*Math.pow(b.rate, 5) + (Math.random() - 0.5)/1000) - a.categories[type + '']*Math.pow(a.rate, 5)})
 
         array = array.slice(0, 5)
 

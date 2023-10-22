@@ -66,7 +66,7 @@
         }
 
         .chess-container {
-            width: 100%;
+            width: 95%;
             margin-bottom: 5px;
         }
 
@@ -116,7 +116,7 @@
 
         .generate-new {
             margin: 40px;
-            font-size: xxx-large;
+            font-size: xx-large;
             background: transparent;
             border: 2px solid black;
             transition: all 0.2s;
@@ -257,7 +257,7 @@
         </div>
         <div class="cat-search" title="Search puzzles by category">
             <select id="cat-select" class="cat-select" onchange="loadPuzzlesByCat(this.value)">
-                <option value="0" selected>Choose category</option>
+                <option value="0" selected>Choose categories</option>
                 <option value="1" title="Puzzle started from opening phase">Opening</option>
                 <option value="2" title="Puzzle started from middle phase">Middlegame</option>
                 <option value="3" title="Puzzle started from end phase">Endgame</option>
@@ -266,6 +266,9 @@
                 <option value="6" title="Win by getting a tempo advantage">Win by tempo</option>
                 <option value="7" title="Queen race">Queen race</option>
                 <option value="8" title="Intermediate move">Intermediate</option>
+                <option value="9" title="Zugzwang position">Zugzwang</option>
+                <option value="10" title="2-4 moves">Short</option>
+                <option value="11" title="5-10 moves">Long</option>
 
             </select>
         </div>

@@ -43,6 +43,9 @@
                 This website is a project made by normchell (<a href="https://lichess.org/@/ya_ne_shahmatist">lichess.org/@/ya_ne_shahmatist</a>). It provides puzzles for a chess variant called
                 <a href="https://lichess.org/variant/antichess">antichess</a>.
             </p>
+            <p class="live-info" id="live-info">
+                Website contains ... puzzles
+            </p>
             <p class="instruction">
                 <h3>How to use</h3>
                 <ul>
@@ -88,14 +91,22 @@
             </p>
             <p class="conclusion">
                 <a href="/"><h3>Let's solve!</h3></a>
-            </p>
-            <p class="feedback">
-                If you've spotted any issues or want to leave a feedback feel free to contact me in discord (normchell) or lichess (<a href="https://lichess.org/@/ya_ne_shahmatist">ya_ne_shahmatist</a>)
-            </p>
-            <p class="api">
-                <a href="/api">API</a>
+                <p class="feedback">
+                    If you've spotted any issues or want to leave a feedback feel free to contact me on discord (normchell) or lichess (<a href="https://lichess.org/@/ya_ne_shahmatist">ya_ne_shahmatist</a>)
+                </p>
             </p>
         </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io()
+
+        socket.emit('get-info-page-data')
+
+        socket.on('info-page-data', data => {
+            console.log(data)
+            document.getElementById('live-info').innerHTML = `Website contains ${data.puzzles} puzzles`
+        })
+    </script>
 </body>
 </html>

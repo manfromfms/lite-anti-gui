@@ -1,373 +1,374 @@
-// Save/load encryption
-var CryptoJS = require("crypto-js")
-require('dotenv').config();
-var save = (data, path, key) => {
-    if(typeof data === 'object') data = JSON.stringify(data)
+var main = async () => {
+    const Database = require("@replit/database")
+    const db = new Database()
 
-    var enc = CryptoJS.AES.encrypt(data, key).toString()
+    // Save/load encryption
+    var CryptoJS = require("crypto-js")
+    require('dotenv').config();
+    var save = (data, path, key) => {
+        if(typeof data === 'object') data = JSON.stringify(data)
 
-    require("fs").writeFileSync(__dirname + path, enc)
-}
+        var enc = CryptoJS.AES.encrypt(data, key).toString()
 
-var loadJSON = (path, key) => {
-    var enc = require("fs").readFileSync(__dirname + path, 'utf-8')
+        require("fs").writeFileSync(__dirname + path, enc)
+    }
 
-    var dec
+    var loadJSON = (path, key) => {
+        var enc = require("fs").readFileSync(__dirname + path, 'utf-8')
 
-    try {
-        var o = JSON.parse(enc);
+        var dec
 
-        if (o && typeof o === "object") {
-            dec = o
+        try {
+            var o = JSON.parse(enc);
+
+            if (o && typeof o === "object") {
+                dec = o
+            }
         }
-    }
-    catch (e) {
-        var bytes  = CryptoJS.AES.decrypt(enc, key)
-        dec = bytes.toString(CryptoJS.enc.Utf8)
+        catch (e) {
+            var bytes  = CryptoJS.AES.decrypt(enc, key)
+            dec = bytes.toString(CryptoJS.enc.Utf8)
 
-        dec = JSON.parse(dec)
-    }
+            dec = JSON.parse(dec)
+        }
 
-    //if(dec.length > 0) dec = JSON.parse(dec)
-    //else dec = {}
+        //if(dec.length > 0) dec = JSON.parse(dec)
+        //else dec = {}
 
-    return dec
-}
-
-var users_key = process.env.USERS_KEY ? process.env.USERS_KEY : 'ca44b443663e8a107b83e8396a59cfba516077207e39834c0cf8d2c739a4a9714fe5a703e9f52b4f41ce01ae62d74400dacf23637c063562a07a6e400322f989'
-
-
-// Init users base
-//const users = require("./data/users.json")
-const users = loadJSON("/data/users.json", users_key)
-
-
-if(users_key === '123456') console.log(JSON.stringify(users))
-
-
-// Init scripts
-const { PuzzlesAPI } = require("./puzzles-database/puzzles")
-var puzzles = new PuzzlesAPI(users)
-
-console.log(puzzles.getPuzzleRating(1279))
-
-
-// Init server
-const express = require('express')
-const app = express()
-const http = require('http')
-const server = http.createServer(app)
-const { Server } = require("socket.io")
-const io = new Server(server)
-
-// Main page
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/client/index.html')
-}).get('/script.js', (req, res) => {
-    res.sendFile(__dirname + '/client/script.js')
-}).get('/AbChess-0.3.1.js', (req, res) => {
-    res.sendFile(__dirname + '/client/abchess/AbChess/AbChess-0.3.1.js')
-}).get('/AbChess-0.3.1.css', (req, res) => {
-    res.sendFile(__dirname + '/client/abchess/AbChess/AbChess-0.3.1.css')
-}).get('/images/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name}`)
-}).get('/img/chesspieces/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
-}).get('/favicon_dark_theme.ico', (req, res) => {
-    res.sendFile(__dirname + `/client/tabler_chess-rook_dark.png`)
-}).get('/favicon_light_theme.ico', (req, res) => {
-    res.sendFile(__dirname + `/client/tabler_chess-rook_light.png`)
-})
-
-// Puzzle page
-app.get('/puzzle/:id', (req, res) => {
-    res.sendFile(__dirname + '/client/index.html')
-}).get('/puzzle/img/chesspieces/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
-})
-
-// From-rage page
-app.get('/from-range/:range', (req, res) => {
-    res.sendFile(__dirname + '/client/index.html')
-}).get('/from-range/img/chesspieces/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
-})
-
-// Flow page
-app.get('/flow/', (req, res) => {
-    res.sendFile(__dirname + '/client/flow/index.html')
-}).get('/flow/script.js', (req, res) => {
-    res.sendFile(__dirname + '/client/flow/script.js')
-}).get('/flow/img/chesspieces/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
-})
-
-// Flow from-range page
-app.get('/flow/from-range/:range', (req, res) => {
-    res.sendFile(__dirname + '/client/flow/index.html')
-}).get('/flow/from-range/img/chesspieces/wikipedia/:name', (req, res) => {
-    res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
-})
-
-// Info page
-app.get('/info', (req, res) => {
-    res.sendFile(__dirname + '/client/info/index.html')
-})
-
-// API
-app.get('/api', (req, res) => {
-    res.sendFile(__dirname + '/client/api/api.html')
-}).get('/api/get/:amount', (req, res) => {
-    res.send(puzzles.get({rated: [], categorized: []}, Math.max(1, Math.min(100, Math.floor(Number(req.params.amount))))))
-}).get('/api/get/:amount/range/:range', (req, res) => {
-    var start = req.params.range.split('-')[0]
-    var end = req.params.range.split('-')[1]
-
-    var r = {}
-
-    if(start == Number(start) && end == Number(end)) {
-        r.start = Number(start)
-        r.end = Number(end)
+        return dec
     }
 
-    res.send(puzzles.get({rated: [], categorized: []}, Math.max(1, Math.min(100, Math.floor(Number(req.params.amount)))), r))
-}).get('/api/get/id/:id', (req, res) => {
-    res.send(puzzles.getById(Number(req.params.id)))
-}).get('/api/get/category/:type', (req, res) => {
-    res.send(puzzles.getCategorizedUnrated({rated: [], categorized: []}, req.params.type))
-})
+    var users_key = process.env.USERS_KEY ? process.env.USERS_KEY : '123456'
 
-var onlineCounter = 0
 
-/*
+    // Init users base
+    //const users = require("./data/users.json")
+    //const users = loadJSON("/data/users.json", users_key)
 
-Categories:
-    1 - Opening
-    2 - Middlegame
-    3 - Endgame
-    4 - Cleaning
-    5 - Promotion cleaning
-    6 - Win by tempo
-    7 - Queen race
-    8 - Intermediate
+    var users_db = await db.get("users")
 
-TODO: API
-TODO: Opening info
+    //console.log(users_db)
+    const users = JSON.parse(users_db)
+    console.log(`Loaded ${Object.keys(users).length} users`)
 
- */
+    if(users_key === '123456') console.log(JSON.stringify(users))
 
-// User bridge
-io.on('connection', async (socket) => {
-    /*for(let i = 0; i < 5; i++) {
-        socket.emit("puzzle-data", puzzles.get())
-    }*/
 
-    var userHash = ''
-    var lastRequest = 0
+    // Init scripts
+    const { PuzzlesAPI } = require("./puzzles-database/puzzles")
+    var puzzles = new PuzzlesAPI(users)
 
-    var range = {
-        start: 0,
-        end: 1000000,
-    }
 
-    onlineCounter++
-    io.sockets.emit('update-online-counter', onlineCounter)
+    // Init server
+    const express = require('express')
+    const app = express()
+    const http = require('http')
+    const server = http.createServer(app)
+    const { Server } = require("socket.io")
+    const io = new Server(server)
 
-    socket.on('disconnect', () => {
+    // Main page
+    app.get('/', (req, res) => {
+        res.sendFile(__dirname + '/client/index.html')
+    }).get('/script.js', (req, res) => {
+        res.sendFile(__dirname + '/client/script.js')
+    }).get('/AbChess-0.3.1.js', (req, res) => {
+        res.sendFile(__dirname + '/client/abchess/AbChess/AbChess-0.3.1.js')
+    }).get('/AbChess-0.3.1.css', (req, res) => {
+        res.sendFile(__dirname + '/client/abchess/AbChess/AbChess-0.3.1.css')
+    }).get('/images/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name}`)
+    }).get('/img/chesspieces/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
+    }).get('/favicon_dark_theme.ico', (req, res) => {
+        res.sendFile(__dirname + `/client/tabler_chess-rook_dark.png`)
+    }).get('/favicon_light_theme.ico', (req, res) => {
+        res.sendFile(__dirname + `/client/tabler_chess-rook_light.png`)
+    })
+
+    // Puzzle page
+    app.get('/puzzle/:id', (req, res) => {
+        res.sendFile(__dirname + '/client/index.html')
+    }).get('/puzzle/img/chesspieces/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
+    })
+
+    // From-rage page
+    app.get('/from-range/:range', (req, res) => {
+        res.sendFile(__dirname + '/client/index.html')
+    }).get('/from-range/img/chesspieces/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
+    })
+
+    // Flow page
+    app.get('/flow/', (req, res) => {
+        res.sendFile(__dirname + '/client/flow/index.html')
+    }).get('/flow/script.js', (req, res) => {
+        res.sendFile(__dirname + '/client/flow/script.js')
+    }).get('/flow/img/chesspieces/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
+    })
+
+    // Flow from-range page
+    app.get('/flow/from-range/:range', (req, res) => {
+        res.sendFile(__dirname + '/client/flow/index.html')
+    }).get('/flow/from-range/img/chesspieces/wikipedia/:name', (req, res) => {
+        res.sendFile(__dirname + `/client/abchess/images/wikipedia/${req.params.name.toLowerCase()}`)
+    })
+
+    // Info page
+    app.get('/info', (req, res) => {
+        res.sendFile(__dirname + '/client/info/index.html')
+    })
+
+    var onlineCounter = 0
+
+    /*
+
+    Categories:
+        1 - Opening
+        2 - Middlegame
+        3 - Endgame
+        4 - Cleaning
+        5 - Promotion cleaning
+        6 - Win by tempo
+        7 - Queen race
+        8 - Intermediate
+        9 - Zugzwang
+        10 - Short (2-4 moves)
+        11 - Long (5-10 moves)
+
+    TODO: API
+    TODO: Opening info
+
+     */
+
+    // User bridge
+    io.on('connection', async (socket) => {
+        /*for(let i = 0; i < 5; i++) {
+            socket.emit("puzzle-data", puzzles.get())
+        }*/
+
+        var userHash = ''
+        var lastRequest = 0
+
+        var range = {
+            start: 0,
+            end: 1000000,
+        }
+
+        onlineCounter++
         io.sockets.emit('update-online-counter', onlineCounter)
-        onlineCounter--
-    })
 
-    var path = socket.handshake.headers.referer.split("/").slice(3)
-
-    if(path.length === 2) {
-        if(path[0] === 'from-range') {
-            var start = path[1].split('-')[0]
-            var end = path[1].split('-')[1]
-
-            if(start == Number(start) && end == Number(end)) {
-                range.start = Number(start)
-                range.end = Number(end)
-            }
-        }
-    } else if(path.length === 3) {
-        if(path[0] === 'flow' && path[1] === 'from-range') {
-            var start = path[2].split('-')[0]
-            var end = path[2].split('-')[1]
-
-            if(start == Number(start) && end == Number(end)) {
-                range.start = Number(start)
-                range.end = Number(end)
-            }
-        }
-    }
-
-    socket.on("flow-with-hash", hash => {
-        userHash = hash
-        if(!users[userHash]) {
-            users[userHash] = {
-                rated: [],
-                categorized: []
-            }
-        }
-
-        setTimeout(() => {
-            socket.emit('flow-data', puzzles.get(users[userHash], 1, range)[0])
-        }, 1000)
-    })
-
-    socket.on("login-with-hash", hash => {
-        userHash = hash
-        if(!users[userHash]) {
-            users[userHash] = {
-                rated: [],
-                categorized: []
-            }
-        }
-
-        var array = puzzles.get(users[userHash], 5, range)
-
-        for(let i in array) socket.emit('puzzle-data', array[i])
-    })
-
-    socket.on("new-flow", () => {
-        if(userHash.length === 0) return
-
-        socket.emit('flow-data', puzzles.get(users[userHash], 1, range)[0])
-    })
-
-    socket.on("ping-with-hash", hash => {
-        userHash = hash
-        if(!users[userHash]) {
-            users[userHash] = {
-                rated: [],
-                categorized: []
-            }
-        }
-    })
-
-    socket.on('login-with-hash-puzzle-id', data => {
-        userHash = data.user_id
-        if(!users[data.user_id]) {
-            users[data.user_id] = {
-                rated: [],
-                categorized: []
-            }
-        }
-
-        socket.emit('puzzle-data', puzzles.getById(Number(data.puzzle_id)))
-    })
-
-    socket.on('get-puzzle-by-id', id => {
-        socket.emit('puzzle-data', puzzles.getById(id))
-    })
-
-    socket.on('new-portion', () => {
-        if(userHash.length === 0) return
-
-        var array = puzzles.get(users[userHash], 5, range)
-
-        for(let i in array) socket.emit('puzzle-data', array[i])
-    })
-
-    socket.on('get-best-unrated', () => {
-        if(userHash.length === 0) return
-
-        if(Date.now() - lastRequest < 500) return
-
-        lastRequest = Date.now()
-
-        var array = puzzles.getBestUnrated(users[userHash])
-
-        for(let i in array) socket.emit('puzzle-data', array[i])
-    })
-
-    socket.on("rate-puzzle", data => {
-        if(userHash.length === 0) return
-
-        if(data.length !== 2 || userHash.length === 0) return
-
-        var id = data[0]
-        var rate = data[1]
-
-        if(Number(rate) < 1 || Number(rate) > 5 || Math.floor(Number(rate)) !== Number(rate)) return
-
-        if(!puzzles.ifRated(users[userHash], {id: Number(id)})) users[userHash].rated.push({
-            id: Number(id),
-            rate: Number(rate),
+        socket.on('disconnect', () => {
+            io.sockets.emit('update-online-counter', onlineCounter)
+            onlineCounter--
         })
 
-        puzzles.users = users
+        var path = socket.handshake.headers.referer.split("/").slice(3)
 
-        console.log("New rating for", id, puzzles.getPuzzleRating(id))
+        if(path.length === 2) {
+            if(path[0] === 'from-range') {
+                var start = path[1].split('-')[0]
+                var end = path[1].split('-')[1]
 
-        save(users, '/data/users.json', users_key)
-    })
-
-    socket.on('puzzle-category', (data) => {
-        if(userHash.length === 0) return
-
-        if(!data) return
-        if(!data.puzzle_id) return
-        if(!data.category) return
-
-        data.category = Number(data.category)
-
-        if(Math.floor(data.category) !== data.category || data.category < 1 || data.category > 8) return
-
-        if(!users[userHash].categorized) {
-            users[userHash].categorized = []
-        }
-
-        if(!puzzles.ifCategorized(users[userHash], {id: data.puzzle_id})) {
-            users[userHash].categorized.push({
-                id: Number(data.puzzle_id),
-                categories: {
-                    "1": 0,
-                    "2": 0,
-                    "3": 0,
-                    "4": 0,
-                    "5": 0,
-                    "6": 0,
-                    "7": 0,
-                    "8": 0,
+                if(start == Number(start) && end == Number(end)) {
+                    range.start = Number(start)
+                    range.end = Number(end)
                 }
-            })
-        }
+            }
+        } else if(path.length === 3) {
+            if(path[0] === 'flow' && path[1] === 'from-range') {
+                var start = path[2].split('-')[0]
+                var end = path[2].split('-')[1]
 
-        for(let i in users[userHash].categorized) {
-            if(users[userHash].categorized[i].id === data.puzzle_id) {
-                users[userHash].categorized[i].categories["" + data.category] = 1
+                if(start == Number(start) && end == Number(end)) {
+                    range.start = Number(start)
+                    range.end = Number(end)
+                }
             }
         }
 
-        puzzles.users = users
+        socket.on('get-info-page-data', () => {
+            socket.emit('info-page-data', {
+                puzzles: puzzles.puzzles.length,
+            })
+        })
 
-        console.log("New category for", data.puzzle_id, puzzles.getPuzzleCategory(data.puzzle_id))
+        socket.on("flow-with-hash", hash => {
+            userHash = hash
+            if(!users[userHash]) {
+                users[userHash] = {
+                    rated: [],
+                    categorized: []
+                }
+            }
 
-        save(users, '/data/users.json', users_key)
+            setTimeout(() => {
+                socket.emit('flow-data', puzzles.get(users[userHash], 1, range)[0])
+            }, 1000)
+        })
+
+        socket.on("login-with-hash", hash => {
+            userHash = hash
+            if(!users[userHash]) {
+                users[userHash] = {
+                    rated: [],
+                    categorized: []
+                }
+            }
+
+            var array = puzzles.get(users[userHash], 5, range)
+
+            for(let i in array) socket.emit('puzzle-data', array[i])
+        })
+
+        socket.on("new-flow", () => {
+            if(userHash.length === 0) return
+
+            socket.emit('flow-data', puzzles.get(users[userHash], 1, range)[0])
+        })
+
+        socket.on("ping-with-hash", hash => {
+            userHash = hash
+            if(!users[userHash]) {
+                users[userHash] = {
+                    rated: [],
+                    categorized: []
+                }
+            }
+        })
+
+        socket.on('login-with-hash-puzzle-id', data => {
+            userHash = data.user_id
+            if(!users[data.user_id]) {
+                users[data.user_id] = {
+                    rated: [],
+                    categorized: []
+                }
+            }
+
+            socket.emit('puzzle-data', puzzles.getById(Number(data.puzzle_id)))
+        })
+
+        socket.on('get-puzzle-by-id', id => {
+            socket.emit('puzzle-data', puzzles.getById(id))
+        })
+
+        socket.on('new-portion', () => {
+            if(userHash.length === 0) return
+
+            var array = puzzles.get(users[userHash], 5, range)
+
+            for(let i in array) socket.emit('puzzle-data', array[i])
+        })
+
+        socket.on('get-best-unrated', () => {
+            if(userHash.length === 0) return
+
+            if(Date.now() - lastRequest < 500) return
+
+            lastRequest = Date.now()
+
+            var array = puzzles.getBestUnrated(users[userHash])
+
+            for(let i in array) socket.emit('puzzle-data', array[i])
+        })
+
+        socket.on("rate-puzzle", data => {
+            if(userHash.length === 0) return
+
+            if(data.length !== 2 || userHash.length === 0) return
+
+            var id = data[0]
+            var rate = data[1]
+
+            if(Number(rate) < 1 || Number(rate) > 5 || Math.floor(Number(rate)) !== Number(rate)) return
+
+            if(!puzzles.ifRated(users[userHash], {id: Number(id)})) users[userHash].rated.push({
+                id: Number(id),
+                rate: Number(rate),
+            })
+
+            puzzles.users = users
+
+            console.log("New rating for", id, puzzles.getPuzzleRating(id))
+
+            save(users, '/data/users.json', users_key)
+        })
+
+        socket.on('puzzle-category', (data) => {
+            if(userHash.length === 0) return
+
+            if(!data) return
+            if(!data.puzzle_id) return
+            if(!data.category) return
+
+            data.category = Number(data.category)
+
+            if(Math.floor(data.category) !== data.category || data.category < 1 || data.category > 11) return
+
+            if(!users[userHash].categorized) {
+                users[userHash].categorized = []
+            }
+
+            if(!puzzles.ifCategorized(users[userHash], {id: data.puzzle_id})) {
+                users[userHash].categorized.push({
+                    id: Number(data.puzzle_id),
+                    categories: {
+                        "1": 0,
+                        "2": 0,
+                        "3": 0,
+                        "4": 0,
+                        "5": 0,
+                        "6": 0,
+                        "7": 0,
+                        "8": 0,
+                        "9": 0,
+                        "10": 0,
+                        "11": 0,
+                    }
+                })
+            }
+
+            for(let i in users[userHash].categorized) {
+                if(users[userHash].categorized[i].id === data.puzzle_id) {
+                    users[userHash].categorized[i].categories["" + data.category] = 1
+                }
+            }
+
+            puzzles.users = users
+
+            console.log("New category for", data.puzzle_id, puzzles.getPuzzleCategory(data.puzzle_id))
+
+            save(users, '/data/users.json', users_key)
+        })
+
+        socket.on('get-puzzles-by-category', (type) => {
+            if(userHash.length === 0) return
+
+            if(Date.now() - lastRequest < 500) return
+
+            lastRequest = Date.now()
+
+            var array = puzzles.getCategorizedUnrated(users[userHash], type)
+
+            for(let i in array) socket.emit('puzzle-data', array[i])
+        })
     })
 
-    socket.on('get-puzzles-by-category', (type) => {
-        if(userHash.length === 0) return
+    setInterval(() => {
+        //require("fs").writeFileSync('./data/users.json', JSON.stringify(users))
 
-        if(Date.now() - lastRequest < 500) return
+        //save(users, '/data/users.json', users_key)
 
-        lastRequest = Date.now()
+        db.set("users", JSON.stringify(users))
+    }, 10000)
 
-        var array = puzzles.getCategorizedUnrated(users[userHash], type)
-
-        for(let i in array) socket.emit('puzzle-data', array[i])
+    // More stuff
+    server.listen(3000, () => {
+        console.log('listening on *:3000')
     })
-})
+}
 
-setInterval(() => {
-    //require("fs").writeFileSync('./data/users.json', JSON.stringify(users))
-
-    save(users, '/data/users.json', users_key)
-}, 10000)
-
-// More stuff
-server.listen(3000, () => {
-    console.log('listening on *:3000')
-})
+main()
