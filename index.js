@@ -315,10 +315,6 @@ var main = async () => {
     })
 
     setInterval(() => {
-        //require("fs").writeFileSync('./data/users.json', JSON.stringify(users))
-
-        //save(users, '/data/users.json', users_key)
-
         db.set("users", JSON.stringify(users))
     }, 10000)
 
