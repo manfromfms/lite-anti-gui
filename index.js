@@ -1,49 +1,8 @@
 var main = async () => {
+    const db_url = ''
+
     const Database = require("@replit/database")
     const db = new Database(db_url)
-
-    // Save/load encryption
-    var CryptoJS = require("crypto-js")
-    require('dotenv').config();
-    var save = (data, path, key) => {
-        if(typeof data === 'object') data = JSON.stringify(data)
-
-        var enc = CryptoJS.AES.encrypt(data, key).toString()
-
-        require("fs").writeFileSync(__dirname + path, enc)
-    }
-
-    var loadJSON = (path, key) => {
-        var enc = require("fs").readFileSync(__dirname + path, 'utf-8')
-
-        var dec
-
-        try {
-            var o = JSON.parse(enc);
-
-            if (o && typeof o === "object") {
-                dec = o
-            }
-        }
-        catch (e) {
-            var bytes  = CryptoJS.AES.decrypt(enc, key)
-            dec = bytes.toString(CryptoJS.enc.Utf8)
-
-            dec = JSON.parse(dec)
-        }
-
-        //if(dec.length > 0) dec = JSON.parse(dec)
-        //else dec = {}
-
-        return dec
-    }
-
-    var users_key = process.env.USERS_KEY ? process.env.USERS_KEY : '123456'
-
-
-    // Init users base
-    //const users = require("./data/users.json")
-    //const users = loadJSON("/data/users.json", users_key)
 
     var users_db = await db.get("users")
 
