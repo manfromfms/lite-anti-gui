@@ -1,3 +1,6 @@
+const Database = require("@replit/database")
+var db
+
 const fs = require('fs')
 
 var main = async () => {
@@ -330,9 +333,6 @@ var main = async () => {
 }
 
 // Connect to database
-const Database = require("@replit/database")
-var db
-
 if(fs.readdirSync(__dirname + '/').includes('private.json')) {
     console.log('Loading database from cloud')
     
