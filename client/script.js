@@ -7,6 +7,20 @@ const halfStar = '<img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%2
 
 const setup = () => {
     var href = window.location.href.split('/')
+
+    if(window.location.href.includes('session')) {
+        const sessionId = href[href.length - 1].split('=')[1]
+
+        console.log(sessionId)
+
+        socket.emit('session-id', {
+            sessionId: sessionId,
+            deviceId: localStorage['user_id']
+        })
+
+        href.pop()
+    }
+
     if(href.length > 3) {
         // Check if link to puzzle with id
         if(href.length === 5) {
@@ -53,7 +67,7 @@ var getBestUnrated = () => {
 
 
 if(!localStorage['user_id']) {
-    localStorage['user_id'] = hash(Math.random() + '') + '_' + prompt('Write your nickname please')
+    localStorage['user_id'] = hash(Math.random() + '')
 }
 
 

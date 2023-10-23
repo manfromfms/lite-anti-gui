@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const Database = require("@replit/database")
 var db
 
@@ -5,10 +6,12 @@ const fs = require('fs')
 
 var main = async () => {
     var users_db = await db.get("users")
+    var links_db = await db.get("links")
 
     //console.log(users_db)
     const users = JSON.parse(users_db)
-    console.log(`Loaded ${Object.keys(users).length} users`)
+    const links = JSON.parse(links_db)
+    console.log(`Loaded ${Object.keys(users).length} users and ${Object.keys(links).length} links`)
 
 
     // Init scripts
@@ -18,6 +21,7 @@ var main = async () => {
 
     // Init server
     const express = require('express')
+    const session = require('express-session')
     const app = express()
     const http = require('http')
     const server = http.createServer(app)
@@ -88,6 +92,83 @@ var main = async () => {
 
     var onlineCounter = 0
 
+    // ----------------- Auth -------------------------
+    const clientId = 'long-double project'
+
+    app.use(session({ resave: true, secret: 'SECRET', saveUninitialized: true }))
+
+    var tempSessions = {}
+
+    // LOGIN
+    const base64URLEncode = (str) => {
+        return str.toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+    }
+    
+    const sha256 = (buffer) => crypto.createHash('sha256').update(buffer).digest();
+    
+    const createVerifier = () => base64URLEncode(crypto.randomBytes(32));
+    
+    const createChallenge = (verifier) => base64URLEncode(sha256(verifier));
+    
+    app.get('/login', async (req, res) => {
+        const url = req.protocol + '://' + req.get('host') + req.baseUrl;
+        const verifier = createVerifier()
+        const challenge = createChallenge(verifier)
+        req.session.codeVerifier = verifier
+        res.redirect('https://lichess.org/oauth?' + new URLSearchParams({
+            response_type: 'code',
+            client_id: clientId,
+            redirect_uri: `${url}/callback`,
+            scope: 'preference:read',
+            code_challenge_method: 'S256',
+            code_challenge: challenge
+        }))
+    })
+    
+    // CALLBACK
+    const getLichessToken = async (authCode, verifier, url) => await fetch('https://lichess.org/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            grant_type: 'authorization_code',
+            redirect_uri: `${url}/callback`,
+            client_id: clientId,
+            code: authCode,
+            code_verifier: verifier,
+        })
+    }).then(res => res.json());
+    
+    const getLichessUser = async (accessToken) => await fetch('https://lichess.org/api/account', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    }).then(res => res.json());
+    
+    app.get('/callback', async (req, res) => {
+        const url = req.protocol + '://' + req.get('host') + req.baseUrl;
+        const verifier = req.session.codeVerifier;
+        const lichessToken = await getLichessToken(req.query.code, verifier, url)
+    
+        if (!lichessToken.access_token) {
+            res.send('Failed getting token');
+            return
+        }
+
+        var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+
+        const temps = Math.floor(Math.random() * 10000000)
+
+        tempSessions[temps] = {
+            timestamp: Date.now(),
+            token: lichessToken.access_token
+        }
+
+        res.redirect(`${req.protocol}://${req.get('host')}?session=${temps}`)
+    })
+
     /*
 
     Categories:
@@ -154,6 +235,21 @@ var main = async () => {
             }
         }
 
+        socket.on('session-id', async data => {
+            //console.log(data.sessionId, data, tempSessions[data.sessionId])
+
+            if(!tempSessions[data.sessionId]) return
+
+            var lichessUser = await getLichessUser(tempSessions[data.sessionId].token)
+
+            links[data.deviceId] = {
+                lichess_id: lichessUser.id,
+                timestamp: Date.now()
+            }
+
+            delete tempSessions[data.sessionId]
+        })
+
         socket.on('get-info-page-data', () => {
             socket.emit('info-page-data', {
                 puzzles: puzzles.puzzles.length,
@@ -175,7 +271,12 @@ var main = async () => {
         })
 
         socket.on("login-with-hash", hash => {
-            userHash = hash
+            if(links[hash]) {
+                userHash = links[hash].lichess_id
+            } else {
+                userHash = hash
+            }
+
             if(!users[userHash]) {
                 users[userHash] = {
                     rated: [],
@@ -195,7 +296,12 @@ var main = async () => {
         })
 
         socket.on("ping-with-hash", hash => {
-            userHash = hash
+            if(links[hash]) {
+                userHash = links[hash].lichess_id
+            } else {
+                userHash = hash
+            }
+
             if(!users[userHash]) {
                 users[userHash] = {
                     rated: [],
@@ -205,7 +311,12 @@ var main = async () => {
         })
 
         socket.on('login-with-hash-puzzle-id', data => {
-            userHash = data.user_id
+            if(links[data.user_id]) {
+                userHash = links[data.user_id].lichess_id
+            } else {
+                userHash = data.user_id
+            }
+
             if(!users[data.user_id]) {
                 users[data.user_id] = {
                     rated: [],
@@ -257,9 +368,7 @@ var main = async () => {
 
             puzzles.users = users
 
-            console.log("New rating for", id, puzzles.getPuzzleRating(id))
-
-            save(users, '/data/users.json', users_key)
+            console.log(`New rating by ${userHash} for`, id, puzzles.getPuzzleRating(id))
         })
 
         socket.on('puzzle-category', (data) => {
@@ -304,9 +413,7 @@ var main = async () => {
 
             puzzles.users = users
 
-            console.log("New category for", data.puzzle_id, puzzles.getPuzzleCategory(data.puzzle_id))
-
-            save(users, '/data/users.json', users_key)
+            console.log(`New category by ${userHash} for`, data.puzzle_id, puzzles.getPuzzleCategory(data.puzzle_id))
         })
 
         socket.on('get-puzzles-by-category', (type) => {
@@ -324,7 +431,8 @@ var main = async () => {
 
     setInterval(() => {
         db.set("users", JSON.stringify(users))
-    }, 10000)
+        db.set("links", JSON.stringify(links))
+    }, 5000)
 
     // More stuff
     server.listen(3000, () => {
