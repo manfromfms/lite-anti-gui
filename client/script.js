@@ -19,6 +19,10 @@ const setup = () => {
         })
 
         href.pop()
+
+        window.open(`/`, "_self")
+
+        return
     }
 
     if(href.length > 3) {
@@ -117,6 +121,10 @@ var loadPuzzlesByCat = (type) => {
 
     chessArray.innerHTML = ''
 }
+
+socket.on('ask-for-login', () => {
+    window.open("./login", "_self")
+})
 
 socket.on("puzzle-data", (data) => {
     console.log(data)

@@ -275,6 +275,7 @@ var main = async () => {
                 userHash = links[hash].lichess_id
             } else {
                 userHash = hash
+                socket.emit('ask-for-login')
             }
 
             if(!users[userHash]) {
