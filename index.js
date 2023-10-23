@@ -82,7 +82,7 @@ var main = async () => {
 
     // API
     app.post('/get-db-key', (req, res) => {
-        if(res.body.token === process.env['db_key']) res.json(process.env['REPLIT_DB_URL'])
+        if(req.body.token === process.env['db_key']) res.json(process.env['REPLIT_DB_URL'])
         else res.json({"error": "Access denied"})
     })
 
