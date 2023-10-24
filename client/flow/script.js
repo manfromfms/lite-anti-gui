@@ -9,7 +9,7 @@ socket.on('update-online-counter', num => {
 
 // Load user id
 if(!localStorage['user_id']) {
-    localStorage['user_id'] = hash(Math.random() + '') + '_' + prompt('Write your nickname please')
+    localStorage['user_id'] = hash(Math.random() + '')
 }
 
 setInterval(() => {

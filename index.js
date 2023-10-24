@@ -257,7 +257,12 @@ var main = async () => {
         })
 
         socket.on("flow-with-hash", hash => {
-            userHash = hash
+            if(links[hash]) {
+                userHash = links[hash].lichess_id
+            } else {
+                userHash = hash
+            }
+            
             if(!users[userHash]) {
                 users[userHash] = {
                     rated: [],
@@ -275,7 +280,6 @@ var main = async () => {
                 userHash = links[hash].lichess_id
             } else {
                 userHash = hash
-                socket.emit('ask-for-login')
             }
 
             if(!users[userHash]) {
