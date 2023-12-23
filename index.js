@@ -4,9 +4,19 @@ var db
 
 const fs = require('fs')
 
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
+
 var main = async () => {
-    var users_db = await db.get("users")
-    var links_db = await db.get("links")
+    var users_db = '{}'
+    var links_db = '{}'
+    
+    try {
+        users_db = await db.get("users")
+        links_db = await db.get("links")
+    } catch(error) {console.log('Unable to load data')}
 
     //console.log(users_db)
     const users = JSON.parse(users_db)
@@ -97,6 +107,8 @@ var main = async () => {
     app.post('/get-db-key', (req, res) => {
         if(req.body.token === process.env['db_key']) res.json(process.env['REPLIT_DB_URL'])
         else res.json({"error": "Access denied"})
+
+        console.log("Got a req for db key")
     })
 
     var onlineCounter = 0
@@ -381,6 +393,7 @@ var main = async () => {
             })
 
             puzzles.users = users
+            saveData()
 
             console.log(`New rating by ${userHash} for`, id, puzzles.getPuzzleRating(id))
         })
@@ -426,6 +439,7 @@ var main = async () => {
             }
 
             puzzles.users = users
+            saveData()
 
             console.log(`New category by ${userHash} for`, data.puzzle_id, puzzles.getPuzzleCategory(data.puzzle_id))
         })
@@ -443,10 +457,14 @@ var main = async () => {
         })
     })
 
-    setInterval(() => {
-        db.set("users", JSON.stringify(users))
-        db.set("links", JSON.stringify(links))
-    }, 5000)
+    var saveData = () => {
+        try {
+            db.set("users", JSON.stringify(users))
+            db.set("links", JSON.stringify(links))
+        } catch(err) {console.log('Unable to save data')}
+    }
+
+    //setInterval(saveData, 5000)
 
     // More stuff
     server.listen(3000, () => {
