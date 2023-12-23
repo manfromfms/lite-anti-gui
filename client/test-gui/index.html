@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test GUI</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+          integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
+          crossorigin="anonymous">
+
+    <link rel="shortcut icon" href="favicon_dark_theme.ico"
+          media="(prefers-color-scheme: dark)"/>
+    <link rel="shortcut icon" href="favicon_light_theme.ico"
+          media="(prefers-color-scheme: light)" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&family=Open+Sans:wght@300;400&family=Roboto+Mono&display=swap" rel="stylesheet">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-25T6VHFDNJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-25T6VHFDNJ');
+    </script>
+
+    <!-- Chessboard styles -->
+    <link rel="stylesheet" href="/assets/chessboard.css">
+
+    <style>
+        body {
+            height: 100vh;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 2fr 2fr;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div></div>
+        <div id="board"></div>
+        <div></div>
+    </div>
+    
+    
+    <script type="module">
+        import {INPUT_EVENT_TYPE, COLOR, Chessboard, BORDER_TYPE, FEN} from "https://cdn.jsdelivr.net/npm/cm-chessboard@8/src/Chessboard.js"
+        import {PROMOTION_DIALOG_RESULT_TYPE, PromotionDialog} from "https://cdn.jsdelivr.net/npm/cm-chessboard@8/src/extensions/promotion-dialog/PromotionDialog.js"
+        import {Accessibility} from "https://cdn.jsdelivr.net/npm/cm-chessboard@8/src/extensions/accessibility/Accessibility.js"
+      
+        const board = new Chessboard(document.getElementById("board"), {
+            position: FEN.start,
+            extensions: [
+                {class: PromotionDialog},
+                {class: Accessibility, props: {visuallyHidden: true}}
+            ]
+        })
+
+        var inputHandler = (event) => {
+            if(event.type === INPUT_EVENT_TYPE.movingOverSquare) {
+                return // ignore this event
+            }
+
+            console.log(event)
+            
+            if (event.type === INPUT_EVENT_TYPE.moveInputStarted) {
+                return true
+            }
+
+            if (event.type === INPUT_EVENT_TYPE.validateMoveInput) {
+                const move = {from: event.squareFrom, to: event.squareTo, promotion: event.promotion, piece: event.piece}
+
+                if (move.from[1] === '7' && move.to[1] === '8' && move.piece === 'wp') {
+                    console.log('White promotion')
+                } else if(move.from[1] === '2' && move.to[1] === '1' && move.piece === 'bp') {
+                    console.log('Black promotion')
+                }
+
+                return true
+            }
+        }
+
+        board.enableMoveInput(inputHandler, COLOR.black)
+      </script>
+</body>
+</html>

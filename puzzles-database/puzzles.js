@@ -5,27 +5,6 @@ class PuzzlesAPI {
         //this.puzzles = []
 
         this.users = users
-
-        /*
-        {
-            rated: [{id: 1234, rate: 5}]
-        }
-         */
-
-        /*var counter = 0
-        for(let i in this.JSONList) {
-            for(let j of this.JSONList[i].puzzles) {
-                this.puzzles.push({
-                    id: counter,
-                    site: i,
-                    fen: j,
-                    link: `https://lichess.org/analysis/antichess/${j.replaceAll(" ", "_")}`,
-                    elo: this.JSONList[i].rating
-                })
-
-                counter++
-            }
-        }*/
 		
 		console.log('Loaded', this.puzzles.length, 'puzzles')
     }

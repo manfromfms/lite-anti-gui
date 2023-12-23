@@ -84,6 +84,15 @@ var main = async () => {
         res.sendFile(__dirname + '/client/info/index.html')
     })
 
+    //Test GUI
+    app.get('/test-gui', (req, res) => {
+        res.sendFile(__dirname + '/client/test-gui/index.html')
+    }).get('/assets/pieces/standard.svg', (req, res) => {
+        res.sendFile(__dirname + '/client/cm-chessboard/assets/pieces/standard.svg')
+    }).get('/assets/chessboard.css', (req, res) => {
+        res.sendFile(__dirname + '/client/cm-chessboard/assets/chessboard.css')
+    })
+
     // API
     app.post('/get-db-key', (req, res) => {
         if(req.body.token === process.env['db_key']) res.json(process.env['REPLIT_DB_URL'])
